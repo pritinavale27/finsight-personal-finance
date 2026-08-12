@@ -1,8 +1,9 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { TrendingUp, ShieldCheck, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { TrendingUp, ShieldCheck, LogOut, Loader2 } from 'lucide-react';
 import { navigationItems } from './navigation';
-import { currentUser } from '../../data/mockData';
+import { useAuth } from '../../hooks/useAuth';
+import { getUserDisplayName, getUserInitials } from '../../types/auth';
 import { cn } from '../../utils/cn';
 
 interface SidebarProps {
@@ -11,6 +12,21 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ className, onNavigate }) => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
+
+  const displayName = getUserDisplayName(user);
+  const initials = getUserInitials(displayName);
+  const email = user?.email ?? '';
+  const avatarUrl = (user?.user_metadata?.avatar_url as string) || null;
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <aside
       className={cn(
@@ -79,19 +95,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onNavigate }) => {
       {/* User Profile Section */}
       <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 space-y-3">
         <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-indigo-500/30 shrink-0">
-            {currentUser.name.charAt(0)}
-          </div>
+          {/* Avatar or Initials */}
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="h-9 w-9 rounded-full object-cover ring-2 ring-indigo-500/30 shrink-0"
+            />
+          ) : (
+            <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-indigo-500/30 shrink-0">
+              {initials}
+            </div>
+          )}
+
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-slate-100 truncate">{currentUser.name}</p>
-            <p className="text-[10px] text-slate-400 truncate">{currentUser.email}</p>
+            <p className="text-xs font-bold text-slate-100 truncate">{displayName}</p>
+            <p className="text-[10px] text-slate-400 truncate">{email}</p>
           </div>
+
           <button
-            className="text-slate-500 hover:text-slate-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-            title="Log Out"
-            aria-label="Log Out"
+            id="sidebar-signout-button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+            title="Sign out"
+            aria-label="Sign out"
           >
-            <LogOut className="h-4 w-4" />
+            {signingOut ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
           </button>
         </div>
 

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, RefreshCw, Filter } from 'lucide-react';
 import {
-  currentUser,
   availableMonths,
   summaryMetrics,
   incomeExpenseData,
@@ -11,6 +10,8 @@ import {
   savingsGoals,
   mockAIInsights,
 } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { getUserDisplayName } from '../types/auth';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { IncomeExpenseChart } from '../components/dashboard/IncomeExpenseChart';
 import { SpendingCategoryChart } from '../components/dashboard/SpendingCategoryChart';
@@ -23,6 +24,8 @@ import { SkeletonChart } from '../components/ui/skeletons/SkeletonChart';
 import { useToast } from '../components/ui/Toast';
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const displayName = getUserDisplayName(user);
   const [selectedMonth, setSelectedMonth] = useState('August 2026');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -42,7 +45,7 @@ export const Dashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-            Good afternoon, {currentUser.name} 👋
+            Good afternoon, {displayName} 👋
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">
             Here's your financial overview.
